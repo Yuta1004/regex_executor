@@ -13,7 +13,9 @@ struct NFA {
 }
 
 impl NFA {
-    /// NFAのコンストラクタ
+    /// # NFAのコンストラクタ
+    /// ## args
+    /// - init_states: Vec<i32> => 状態
     pub fn new(init_states: Vec<i32>) -> NFA {
         let mut init_states = init_states;
         init_states.sort_unstable();
@@ -21,7 +23,12 @@ impl NFA {
         NFA { start: -1, finish: -1, reserved_state, move_table: HashMap::new() }
     }
 
-    /// 初期状態セット
+    /// # 初期状態セット
+    /// ## args
+    /// - state: i32 => 初期状態にセットする状態
+    ///
+    /// # returns
+    /// Result<(), ()>
     pub fn set_start(&mut self, state: i32) -> Result<(), ()> {
         if Self::check_state(self, state) {
             self.start = state;
@@ -30,7 +37,12 @@ impl NFA {
         Err(())
     }
 
-    /// 受理状態セット
+    /// # 受理状態セット
+    /// ## args
+    /// - state: i32 => 受理状態にセットする状態
+    ///
+    /// # returns
+    /// Result<(), ()>
     pub fn set_finish(&mut self, state: i32) -> Result<(), ()> {
         if Self::check_state(self, state) {
             self.start = state;
