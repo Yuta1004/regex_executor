@@ -20,6 +20,30 @@ impl NFA {
         let reserved_state = (init_states[0], init_states[init_states.len()-1]);
         NFA { start: -1, finish: -1, reserved_state, move_table: HashMap::new() }
     }
+
+    /// 初期状態セット
+    pub fn set_start(&mut self, state: i32) -> Result<(), ()> {
+        if Self::check_state(self, state) {
+            self.start = state;
+            return Ok(());
+        }
+        Err(())
+    }
+
+    /// 受理状態セット
+    pub fn set_finish(&mut self, state: i32) -> Result<(), ()> {
+        if Self::check_state(self, state) {
+            self.start = state;
+            return Ok(());
+        }
+        Err(())
+    }
+
+    /// 自分が管理する状態かどうかチェック
+    fn check_state(&self, state: i32) -> bool {
+        let (t, f) = self.reserved_state;
+        t <= state && state <= f
+    }
 }
 
 #[cfg(test)]
@@ -28,6 +52,11 @@ mod tests {
 
     #[test]
     fn init_test() {
-        let _ = NFA::new(vec![0, 1, 2, 3, 4]);
+        let mut nfa = NFA::new(vec![0, 1, 2, 3, 4]);
+        assert_eq!(nfa.set_start(-1), Err(()));
+        assert_eq!(nfa.set_start(0), Ok(()));
+        assert_eq!(nfa.set_finish(4), Ok(()));
+        assert_eq!(nfa.set_finish(5), Err(()));
+        assert_eq!(nfa.reserved_state, (0, 4));
     }
 }
