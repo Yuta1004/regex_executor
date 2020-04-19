@@ -14,6 +14,7 @@ struct NFA {
 
 impl NFA {
     /// # NFAのコンストラクタ
+    ///
     /// ## args
     /// - init_states: Vec<i32> => 状態
     pub fn new(state_f: i32, state_t: i32) -> NFA {
@@ -21,10 +22,11 @@ impl NFA {
     }
 
     /// # 初期状態セット
+    ///
     /// ## args
     /// - state: i32 => 初期状態にセットする状態
     ///
-    /// # returns
+    /// ## returns
     /// Result<(), ()>
     pub fn set_start(&mut self, state: i32) -> Result<(), ()> {
         if Self::check_state(self, state) {
@@ -35,10 +37,11 @@ impl NFA {
     }
 
     /// # 受理状態セット
+    ///
     /// ## args
     /// - state: i32 => 受理状態にセットする状態
     ///
-    /// # returns
+    /// ## returns
     /// Result<(), ()>
     pub fn set_finish(&mut self, state: i32) -> Result<(), ()> {
         if Self::check_state(self, state) {
