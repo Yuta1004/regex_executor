@@ -16,11 +16,8 @@ impl NFA {
     /// # NFAのコンストラクタ
     /// ## args
     /// - init_states: Vec<i32> => 状態
-    pub fn new(init_states: Vec<i32>) -> NFA {
-        let mut init_states = init_states;
-        init_states.sort_unstable();
-        let reserved_state = (init_states[0], init_states[init_states.len()-1]);
-        NFA { start: -1, finish: -1, reserved_state, move_table: HashMap::new() }
+    pub fn new(state_f: i32, state_t: i32) -> NFA {
+        NFA { start: -1, finish: -1, reserved_state: (state_f, state_t), move_table: HashMap::new() }
     }
 
     /// # 初期状態セット
@@ -64,7 +61,7 @@ mod tests {
 
     #[test]
     fn init_test() {
-        let mut nfa = NFA::new(vec![0, 1, 2, 3, 4]);
+        let mut nfa = NFA::new(0, 4);
         assert_eq!(nfa.set_start(-1), Err(()));
         assert_eq!(nfa.set_start(0), Ok(()));
         assert_eq!(nfa.set_finish(4), Ok(()));
