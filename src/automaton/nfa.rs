@@ -14,8 +14,11 @@ struct NFA {
 
 impl NFA {
     /// NFAのコンストラクタ
-    pub fn new() -> NFA {
-        NFA { start: -1, finish: -1, reserved_node: (0, 0), move_table: HashMap::new() }
+    pub fn new(init_states: Vec<i32>) -> NFA {
+        let mut init_states = init_states;
+        init_states.sort_unstable();
+        let reserved_state = (init_states[0], init_states[init_states.len()-1]);
+        NFA { start: -1, finish: -1, reserved_state, move_table: HashMap::new() }
     }
 }
 
@@ -25,6 +28,6 @@ mod tests {
 
     #[test]
     fn init_test() {
-        let _ = NFA::new();
+        let _ = NFA::new(vec![0, 1, 2, 3, 4]);
     }
 }
