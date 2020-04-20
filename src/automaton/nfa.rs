@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{ HashSet, HashMap };
 
 /// # NFA
 /// ## members
@@ -9,7 +9,7 @@ struct NFA {
     pub start: i32,
     pub finish: i32,
     pub reserved_state: (i32, i32),
-    move_table: HashMap<i32, HashMap<char, Vec<i32>>>
+    move_table: HashMap<i32, HashMap<char, HashSet<i32>>>
 }
 
 impl NFA {
@@ -62,7 +62,7 @@ impl NFA {
     pub fn get_chains(&self, state: i32, c: char) -> Vec<i32> {
         if let Some(alphabet_chains) = self.move_table.get(&state) {
             if let Some(states) = alphabet_chains.get(&c) {
-                return states[0..].to_owned();
+                return states.iter().cloned().collect();
             }
         }
         Vec::new()
