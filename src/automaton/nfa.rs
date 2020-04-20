@@ -18,7 +18,11 @@ impl NFA {
     /// ## args
     /// - init_states: Vec<i32> => 状態
     pub fn new(state_f: i32, state_t: i32) -> NFA {
-        NFA { start: -1, finish: -1, reserved_state: (state_f, state_t), move_table: HashMap::new() }
+        let mut move_table: HashMap<i32, HashMap<char, HashSet<i32>>> = HashMap::new();
+        for state in state_f..state_t {
+            move_table.insert(state, HashMap::new());
+        }
+        NFA { start: -1, finish: -1, reserved_state: (state_f, state_t), move_table }
     }
 
     /// # 初期状態セット
