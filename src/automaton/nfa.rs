@@ -64,8 +64,8 @@ impl NFA {
     /// ## returns
     /// Vec<i32>
     pub fn get_chains(&self, state: i32, c: char) -> Vec<i32> {
-        if let Some(alphabet_chains) = self.move_table.get(&state) {
-            if let Some(states) = alphabet_chains.get(&c) {
+        if Self::check_state(self, state) {
+            if let Some(states) = self.move_table[&state].get(&c) {
                 return states.iter().cloned().collect();
             }
         }
