@@ -55,6 +55,29 @@ impl NFA {
         Err(())
     }
 
+    /// 状態S1と状態S2を文字Cで繋ぐ
+    ///
+    /// ## args
+    /// - state_a: i32 => 状態S1
+    /// - state_b: i32 => 状態S2
+    /// - c: 文字C
+    ///
+    /// ## returns
+    /// Result<(), ()>
+    pub fn set_chain(&mut self, state_a: i32, state_b: i32, c: char) -> Result<(), ()> {
+        if !(Self::check_state(self, state_a) && Self::check_state(self, state_b)) {
+            return Err(())
+        }
+        if !self.move_table[&state_a].contains_key(&c) {
+            self.move_table.get_mut(&state_a).unwrap()
+                           .insert(c, HashSet::new());
+        }
+        self.move_table.get_mut(&state_a).unwrap()
+                       .get_mut(&c).unwrap()
+                       .insert(state_b);
+        Ok(())
+    }
+
     /// # 状態Sからある文字Cを通じて到達できる状態を返す
     ///
     /// ## args
@@ -94,8 +117,22 @@ mod tests {
     }
 
     #[test]
+    #[allow(unused_must_use)]
     fn test_get_chain() {
-        let nfa = NFA::new(0, 4);
-        assert_eq!(nfa.get_chains(0, 'a'), vec![]);
+        /*
+        1 -----(a)----- 2 ----(b)----- 4
+         \                           /
+          -----(a)----- 3 ----(a)----
+        */
+        let mut nfa = NFA::new(1, 4);
+        nfa.set_chain(1, 2, 'a');
+        nfa.set_chain(1, 3, 'a');
+        nfa.set_chain(2, 4, 'b');
+        nfa.set_chain(3, 4, 'a');
+        assert_eq!(nfa.get_chains(1, 'b'), vec![]);
+        assert_eq!(nfa.get_chains(2, 'b'), vec![4]);
+        assert_eq!(nfa.get_chains(3, 'a'), vec![4]);
+        let mut tmp = nfa.get_chains(1, 'a'); tmp.sort();
+        assert_eq!(tmp, vec![2, 3]);
     }
 }
