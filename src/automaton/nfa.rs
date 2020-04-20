@@ -51,10 +51,20 @@ impl NFA {
         Err(())
     }
 
-    /// 自分が管理する状態かどうかチェック
+    /// # 自分が管理する状態かどうかチェック
     fn check_state(&self, state: i32) -> bool {
         let (t, f) = self.reserved_state;
         t <= state && state <= f
+    }
+
+    /// # 状態からある文字を通じて到達できる状態を返す
+    fn get_chains(&self, state: i32, c: char) -> Vec<i32> {
+        if let Some(alphabet_chains) = self.move_table.get(&state) {
+            if let Some(states) = alphabet_chains.get(&c) {
+                return states[0..].to_owned();
+            }
+        }
+        Vec::new()
     }
 }
 
@@ -63,12 +73,18 @@ mod tests {
     use super::NFA;
 
     #[test]
-    fn init_test() {
+    fn test_init() {
         let mut nfa = NFA::new(0, 4);
         assert_eq!(nfa.set_start(-1), Err(()));
         assert_eq!(nfa.set_start(0), Ok(()));
         assert_eq!(nfa.set_finish(4), Ok(()));
         assert_eq!(nfa.set_finish(5), Err(()));
         assert_eq!(nfa.reserved_state, (0, 4));
+    }
+
+    #[test]
+    fn test_get_chain() {
+        let nfa = NFA::new(0, 4);
+        assert_eq!(nfa.get_chains(0, 'a'), vec![]);
     }
 }
