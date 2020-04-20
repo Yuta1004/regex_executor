@@ -51,20 +51,27 @@ impl NFA {
         Err(())
     }
 
-    /// # 自分が管理する状態かどうかチェック
-    fn check_state(&self, state: i32) -> bool {
-        let (t, f) = self.reserved_state;
-        t <= state && state <= f
-    }
-
-    /// # 状態からある文字を通じて到達できる状態を返す
-    fn get_chains(&self, state: i32, c: char) -> Vec<i32> {
+    /// # 状態Sからある文字Cを通じて到達できる状態を返す
+    ///
+    /// ## args
+    /// - state: i32 => 状態S
+    /// - c: char => 文字C
+    ///
+    /// ## returns
+    /// Vec<i32>
+    pub fn get_chains(&self, state: i32, c: char) -> Vec<i32> {
         if let Some(alphabet_chains) = self.move_table.get(&state) {
             if let Some(states) = alphabet_chains.get(&c) {
                 return states[0..].to_owned();
             }
         }
         Vec::new()
+    }
+
+    /// # 自分が管理する状態かどうかチェック
+    fn check_state(&self, state: i32) -> bool {
+        let (t, f) = self.reserved_state;
+        t <= state && state <= f
     }
 }
 
