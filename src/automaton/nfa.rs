@@ -1,5 +1,11 @@
 use std::collections::{ HashSet, HashMap };
 
+/// # NFAのエラー
+#[derive(Debug, PartialEq)]
+enum NFAError {
+    NonReservedState,
+}
+
 /// # NFA
 /// ## members
 /// - start: i32 => 開始状態
@@ -32,12 +38,12 @@ impl NFA {
     ///
     /// ## returns
     /// Result<(), ()>
-    pub fn set_start(&mut self, state: i32) -> Result<(), ()> {
+    pub fn set_start(&mut self, state: i32) -> Result<(), NFAError> {
         if Self::check_state(self, state) {
             self.start = state;
             return Ok(());
         }
-        Err(())
+        Err(NFAError::NonReservedState)
     }
 
     /// # 受理状態セット
@@ -47,12 +53,12 @@ impl NFA {
     ///
     /// ## returns
     /// Result<(), ()>
-    pub fn set_finish(&mut self, state: i32) -> Result<(), ()> {
+    pub fn set_finish(&mut self, state: i32) -> Result<(), NFAError> {
         if Self::check_state(self, state) {
             self.start = state;
             return Ok(());
         }
-        Err(())
+        Err(NFAError::NonReservedState)
     }
 
     /// 状態S1と状態S2を文字Cで繋ぐ
@@ -64,9 +70,9 @@ impl NFA {
     ///
     /// ## returns
     /// Result<(), ()>
-    pub fn set_chain(&mut self, state_a: i32, state_b: i32, c: char) -> Result<(), ()> {
+    pub fn set_chain(&mut self, state_a: i32, state_b: i32, c: char) -> Result<(), NFAError> {
         if !(Self::check_state(self, state_a) && Self::check_state(self, state_b)) {
-            return Err(())
+            return Err(NFAError::NonReservedState)
         }
         if !self.move_table[&state_a].contains_key(&c) {
             self.move_table.get_mut(&state_a).unwrap()
@@ -104,15 +110,15 @@ impl NFA {
 
 #[cfg(test)]
 mod tests {
-    use super::NFA;
+    use super::{ NFA, NFAError };
 
     #[test]
     fn test_init() {
         let mut nfa = NFA::new(0, 4);
-        assert_eq!(nfa.set_start(-1), Err(()));
         assert_eq!(nfa.set_start(0), Ok(()));
         assert_eq!(nfa.set_finish(4), Ok(()));
-        assert_eq!(nfa.set_finish(5), Err(()));
+        assert_eq!(nfa.set_start(-1), Err(NFAError::NonReservedState));
+        assert_eq!(nfa.set_finish(5), Err(NFAError::NonReservedState));
         assert_eq!(nfa.reserved_state, (0, 4));
     }
 
