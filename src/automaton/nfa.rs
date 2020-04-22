@@ -15,7 +15,8 @@ struct NFA {
     pub start: i32,
     pub finish: i32,
     pub reserved_state: (i32, i32),
-    move_table: HashMap<i32, HashMap<char, HashSet<i32>>>
+    move_table: HashMap<i32, HashMap<char, HashSet<i32>>>,
+    epsilon_chain: HashMap<i32, (HashSet<i32>, HashSet<i32>)>  // (forward, back)
 }
 
 impl NFA {
@@ -25,10 +26,12 @@ impl NFA {
     /// - init_states: Vec<i32> => 状態
     pub fn new(state_f: i32, state_t: i32) -> NFA {
         let mut move_table: HashMap<i32, HashMap<char, HashSet<i32>>> = HashMap::new();
+        let mut epsilon_chain: HashMap<i32, (HashSet<i32>, HashSet<i32>)> = HashMap::new();
         for state in state_f..state_t {
             move_table.insert(state, HashMap::new());
+            epsilon_chain.insert(state, (HashSet::new(), HashSet::new()));
         }
-        NFA { start: -1, finish: -1, reserved_state: (state_f, state_t), move_table }
+        NFA { start: -1, finish: -1, reserved_state: (state_f, state_t), move_table, epsilon_chain }
     }
 
     /// # 初期状態セット
@@ -61,7 +64,10 @@ impl NFA {
         Err(NFAError::NonReservedState)
     }
 
-    /// 状態S1と状態S2を文字Cで繋ぐ
+    /// # 状態S1と状態S2を文字Cで繋ぐ
+    ///
+    /// # note
+    /// - ε = '@'
     ///
     /// ## args
     /// - state_a: i32 => 状態S1
@@ -119,6 +125,8 @@ mod tests {
     #[allow(unused_must_use)]
     fn test_get_chain() {
         /*
+          -------------(ε)-----------
+         /                           \
         1 -----(a)----- 2 ----(b)----- 4
          \                           /
           -----(a)----- 3 ----(a)----
@@ -128,11 +136,13 @@ mod tests {
         nfa.set_chain(1, 3, 'a');
         nfa.set_chain(2, 4, 'b');
         nfa.set_chain(3, 4, 'a');
+        nfa.set_chain(1, 4, '@');
         nfa.set_start(1);
         nfa.set_finish(4);
         assert_eq!(nfa.get_chains(1, 'b'), vec![]);
         assert_eq!(nfa.get_chains(2, 'b'), vec![4]);
         assert_eq!(nfa.get_chains(3, 'a'), vec![4]);
+        assert_eq!(nfa.get_chains(1, '@'), vec![4]);
         let mut tmp = nfa.get_chains(1, 'a'); tmp.sort();
         assert_eq!(tmp, vec![2, 3]);
     }
