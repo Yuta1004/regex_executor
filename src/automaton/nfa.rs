@@ -126,6 +126,7 @@ impl NFA {
 
 #[cfg(test)]
 mod tests {
+    use rand::seq::SliceRandom;
     use super::{ NFA, NFAError };
 
     #[test]
@@ -168,12 +169,15 @@ mod tests {
     #[allow(unused_must_use)]
     fn test_epsilon_chain() {
         let mut nfa = NFA::new(1, 6);
-        nfa.set_chain(5, 6, '@');
-        nfa.set_chain(4, 3, '@');
-        nfa.set_chain(1, 2, '@');
-        nfa.set_chain(4, 5, '@');
-        nfa.set_chain(2, 4, '@');
-        nfa.set_chain(4, 6, '@');
+        // パス構成
+        let mut rng = rand::thread_rng();
+        let mut chains = vec![(1, 2), (2, 3), (3, 4), (3, 5), (3, 6), (5, 6)];
+        chains.shuffle(&mut rng);
+        for chain in chains {
+            println!("Set Chain: {} to {}", chain.0, chain.1);
+            nfa.set_chain(chain.0, chain.1, '@');
+        }
+        // チェック
         for state in 1..=6 {
             println!("State: {}", state);
             println!("f {:?}", nfa.epsilon_chain[&state].0);
