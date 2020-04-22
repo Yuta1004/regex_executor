@@ -135,6 +135,8 @@ mod tests {
         nfa.set_chain(1, 3, 'a');
         nfa.set_chain(2, 4, 'b');
         nfa.set_chain(3, 4, 'a');
+        nfa.set_start(1);
+        nfa.set_finish(4);
         assert_eq!(nfa.get_chains(1, 'b'), vec![]);
         assert_eq!(nfa.get_chains(2, 'b'), vec![4]);
         assert_eq!(nfa.get_chains(3, 'a'), vec![4]);
