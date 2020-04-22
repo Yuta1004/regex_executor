@@ -80,6 +80,7 @@ impl NFA {
         if !(Self::check_state(self, state_a) && Self::check_state(self, state_b)) {
             return Err(NFAError::NonReservedState)
         }
+        // 遷移表更新
         if !self.move_table[&state_a].contains_key(&c) {
             self.move_table.get_mut(&state_a).unwrap()
                            .insert(c, HashSet::new());
@@ -87,6 +88,22 @@ impl NFA {
         self.move_table.get_mut(&state_a).unwrap()
                        .get_mut(&c).unwrap()
                        .insert(state_b);
+        // ε-chain更新
+        if c == '@' {
+            self.epsilon_chain.get_mut(&state_a).unwrap().0.insert(state_b);
+            self.epsilon_chain.get_mut(&state_b).unwrap().1.insert(state_a);
+            let f_states: HashSet<i32> = self.epsilon_chain[&state_a].0.iter().cloned().collect();
+            let mut b_state_stack: Vec<i32> = self.epsilon_chain[&state_a].1.iter().cloned().collect();
+            loop {
+                if b_state_stack.len() == 0 {
+                    break;
+                }
+                let state = b_state_stack.pop().unwrap();
+                self.epsilon_chain.get_mut(&state).unwrap().0.extend(&f_states);
+                let mut b_states: Vec<i32> = self.epsilon_chain[&state].1.iter().cloned().collect();
+                b_state_stack.append(&mut b_states);
+            }
+        }
         Ok(())
     }
 
@@ -145,5 +162,23 @@ mod tests {
         assert_eq!(nfa.get_chains(1, '@'), vec![4]);
         let mut tmp = nfa.get_chains(1, 'a'); tmp.sort();
         assert_eq!(tmp, vec![2, 3]);
+    }
+
+    #[test]
+    #[allow(unused_must_use)]
+    fn test_epsilon_chain() {
+        let mut nfa = NFA::new(1, 6);
+        nfa.set_chain(5, 6, '@');
+        nfa.set_chain(4, 3, '@');
+        nfa.set_chain(1, 2, '@');
+        nfa.set_chain(4, 5, '@');
+        nfa.set_chain(2, 4, '@');
+        nfa.set_chain(4, 6, '@');
+        for state in 1..=6 {
+            println!("State: {}", state);
+            println!("f {:?}", nfa.epsilon_chain[&state].0);
+            println!("b {:?}", nfa.epsilon_chain[&state].1);
+            println!("");
+        }
     }
 }
