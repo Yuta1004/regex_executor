@@ -92,17 +92,17 @@ impl NFA {
         if c == '@' {
             self.epsilon_chain.get_mut(&state_a).unwrap().0.insert(state_b);
             self.epsilon_chain.get_mut(&state_b).unwrap().1.insert(state_a);
+            let mut b_state_stack = vec![state_a];
             let mut f_states: HashSet<i32> = HashSet::new();
             f_states.extend(&self.epsilon_chain[&state_a].0.iter().cloned().collect::<HashSet<i32>>());
             f_states.extend(&self.epsilon_chain[&state_b].0.iter().cloned().collect::<HashSet<i32>>());
-            let mut b_state_stack = vec![state_a];
             loop {
                 if b_state_stack.len() == 0 {
                     break;
                 }
                 let state = b_state_stack.pop().unwrap();
-                self.epsilon_chain.get_mut(&state).unwrap().0.extend(&f_states);
                 let mut b_states: Vec<i32> = self.epsilon_chain[&state].1.iter().cloned().collect();
+                self.epsilon_chain.get_mut(&state).unwrap().0.extend(&f_states);
                 b_state_stack.append(&mut b_states);
             }
         }
