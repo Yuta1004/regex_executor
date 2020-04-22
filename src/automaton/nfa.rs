@@ -85,14 +85,7 @@ impl NFA {
     }
 
     /// # 状態Sからある文字Cを通じて到達できる状態を返す
-    ///
-    /// ## args
-    /// - state: i32 => 状態S
-    /// - c: char => 文字C
-    ///
-    /// ## returns
-    /// Vec<i32>
-    pub fn get_chains(&self, state: i32, c: char) -> Vec<i32> {
+    fn get_chains(&self, state: i32, c: char) -> Vec<i32> {
         if Self::check_state(self, state) {
             if let Some(states) = self.move_table[&state].get(&c) {
                 return states.iter().cloned().collect();
