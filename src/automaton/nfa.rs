@@ -27,7 +27,7 @@ impl NFA {
     pub fn new(state_f: i32, state_t: i32) -> NFA {
         let mut move_table: HashMap<i32, HashMap<char, HashSet<i32>>> = HashMap::new();
         let mut epsilon_chain: HashMap<i32, (HashSet<i32>, HashSet<i32>)> = HashMap::new();
-        for state in state_f..state_t {
+        for state in state_f..=state_t {
             move_table.insert(state, HashMap::new());
             epsilon_chain.insert(state, (HashSet::new(), HashSet::new())); // (f, b)
         }
