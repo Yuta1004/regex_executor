@@ -92,8 +92,10 @@ impl NFA {
         if c == '@' {
             self.epsilon_chain.get_mut(&state_a).unwrap().0.insert(state_b);
             self.epsilon_chain.get_mut(&state_b).unwrap().1.insert(state_a);
-            let f_states: HashSet<i32> = self.epsilon_chain[&state_a].0.iter().cloned().collect();
-            let mut b_state_stack: Vec<i32> = self.epsilon_chain[&state_a].1.iter().cloned().collect();
+            let mut f_states: HashSet<i32> = HashSet::new();
+            f_states.extend(&self.epsilon_chain[&state_a].0.iter().cloned().collect::<HashSet<i32>>());
+            f_states.extend(&self.epsilon_chain[&state_b].0.iter().cloned().collect::<HashSet<i32>>());
+            let mut b_state_stack = vec![state_a];
             loop {
                 if b_state_stack.len() == 0 {
                     break;
@@ -174,15 +176,13 @@ mod tests {
         let mut chains = vec![(1, 2), (2, 3), (3, 4), (3, 5), (3, 6), (5, 6)];
         chains.shuffle(&mut rng);
         for chain in chains {
-            println!("Set Chain: {} to {}", chain.0, chain.1);
             nfa.set_chain(chain.0, chain.1, '@');
         }
         // チェック
+        let checklist = vec![(5, 0), (4, 1), (3, 1), (0, 1), (1, 1), (0, 2)];
         for state in 1..=6 {
-            println!("State: {}", state);
-            println!("f {:?}", nfa.epsilon_chain[&state].0);
-            println!("b {:?}", nfa.epsilon_chain[&state].1);
-            println!("");
+            assert_eq!(nfa.epsilon_chain[&state].0.len(), checklist[(state-1) as usize].0);
+            assert_eq!(nfa.epsilon_chain[&state].1.len(), checklist[(state-1) as usize].1);
         }
     }
 }
