@@ -110,7 +110,7 @@ impl NFA {
     }
 
     /// # 状態Sからある文字Cを通じて到達できる状態を返す
-    fn get_chains(&self, state: &i32, c: &char) -> Vec<i32> {
+    fn get_closure(&self, state: &i32, c: &char) -> Vec<i32> {
         if Self::check_state(self, &state) {
             if let Some(states) = self.move_table[&state].get(&c) {
                 return states.iter().cloned().collect();
@@ -159,11 +159,11 @@ mod tests {
         nfa.set_chain(1, 4, '@');
         nfa.set_start(1);
         nfa.set_finish(4);
-        assert_eq!(nfa.get_chains(&1, &'b'), vec![]);
-        assert_eq!(nfa.get_chains(&2, &'b'), vec![4]);
-        assert_eq!(nfa.get_chains(&3, &'a'), vec![4]);
-        assert_eq!(nfa.get_chains(&1, &'@'), vec![4]);
-        let mut tmp = nfa.get_chains(&1, &'a'); tmp.sort();
+        assert_eq!(nfa.get_closure(&1, &'b'), vec![]);
+        assert_eq!(nfa.get_closure(&2, &'b'), vec![4]);
+        assert_eq!(nfa.get_closure(&3, &'a'), vec![4]);
+        assert_eq!(nfa.get_closure(&1, &'@'), vec![4]);
+        let mut tmp = nfa.get_closure(&1, &'a'); tmp.sort();
         assert_eq!(tmp, vec![2, 3]);
     }
 
