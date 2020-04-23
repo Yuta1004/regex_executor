@@ -94,8 +94,8 @@ impl NFA {
             self.epsilon_chain.get_mut(&state_b).unwrap().1.insert(state_a);
             let mut b_state_stack = vec![state_a];
             let mut f_states: HashSet<i32> = HashSet::new();
-            f_states.extend(&self.epsilon_chain[&state_a].0.iter().cloned().collect::<HashSet<i32>>());
-            f_states.extend(&self.epsilon_chain[&state_b].0.iter().cloned().collect::<HashSet<i32>>());
+            f_states.extend(&self.epsilon_chain[&state_a].0.clone());
+            f_states.extend(&self.epsilon_chain[&state_b].0.clone());
             loop {
                 if b_state_stack.len() == 0 {
                     break;
