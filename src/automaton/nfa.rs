@@ -42,7 +42,7 @@ impl NFA {
     /// ## returns
     /// Result<(), ()>
     pub fn set_start(&mut self, state: i32) -> Result<(), NFAError> {
-        if Self::check_state(self, state) {
+        if Self::check_state(self, &state) {
             self.start = state;
             return Ok(());
         }
@@ -57,7 +57,7 @@ impl NFA {
     /// ## returns
     /// Result<(), ()>
     pub fn set_finish(&mut self, state: i32) -> Result<(), NFAError> {
-        if Self::check_state(self, state) {
+        if Self::check_state(self, &state) {
             self.start = state;
             return Ok(());
         }
@@ -77,7 +77,7 @@ impl NFA {
     /// ## returns
     /// Result<(), ()>
     pub fn set_chain(&mut self, state_a: i32, state_b: i32, c: char) -> Result<(), NFAError> {
-        if !(Self::check_state(self, state_a) && Self::check_state(self, state_b)) {
+        if !(Self::check_state(self, &state_a) && Self::check_state(self, &state_b)) {
             return Err(NFAError::NonReservedState)
         }
         // 遷移表更新
@@ -111,7 +111,7 @@ impl NFA {
 
     /// # 状態Sからある文字Cを通じて到達できる状態を返す
     fn get_chains(&self, state: i32, c: char) -> Vec<i32> {
-        if Self::check_state(self, state) {
+        if Self::check_state(self, &state) {
             if let Some(states) = self.move_table[&state].get(&c) {
                 return states.iter().cloned().collect();
             }
@@ -120,9 +120,9 @@ impl NFA {
     }
 
     /// # 自分が管理する状態かどうかチェック
-    fn check_state(&self, state: i32) -> bool {
+    fn check_state(&self, state: &i32) -> bool {
         let (t, f) = self.reserved_state;
-        t <= state && state <= f
+        t <= *state && *state <= f
     }
 }
 
