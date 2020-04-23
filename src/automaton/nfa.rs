@@ -119,6 +119,17 @@ impl NFA {
         HashSet::new()
     }
 
+    /// # 状態集合Sからε-遷移のみで到達可能時な状態一覧を返す
+    fn get_epsilon_closure(&self, states: &HashSet<i32>) -> HashSet<i32> {
+        let mut reachable_states: HashSet<i32> = HashSet::new();
+        for state in states {
+            if Self::check_state(self, state) {
+                reachable_states.extend(&self.epsilon_chain[state].0);
+            }
+        }
+        reachable_states
+    }
+
     /// # 自分が管理する状態かどうかチェック
     fn check_state(&self, state: &i32) -> bool {
         let (t, f) = self.reserved_state;
@@ -128,6 +139,7 @@ impl NFA {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
     use rand::seq::SliceRandom;
     use super::{ NFA, NFAError };
 
@@ -165,6 +177,23 @@ mod tests {
         assert_eq!(nfa.get_closure(&1, &'@').iter().cloned().collect::<Vec<i32>>(), vec![4]);
         let mut tmp: Vec<i32> = nfa.get_closure(&1, &'a').iter().cloned().collect(); tmp.sort();
         assert_eq!(tmp, vec![2, 3]);
+    }
+
+    #[test]
+    #[allow(unused_must_use)]
+    fn test_get_epsilon_closure() {
+        let mut states: HashSet<i32> = HashSet::new();
+        states.insert(3);
+        states.insert(5);
+        states.insert(6);
+        let mut nfa = NFA::new(1, 6);
+        nfa.set_chain(1, 2, '@');
+        nfa.set_chain(2, 3, '@');
+        nfa.set_chain(3, 4, '@');
+        nfa.set_chain(3, 5, '@');
+        nfa.set_chain(3, 6, '@');
+        nfa.set_chain(5, 6, '@');
+        assert_eq!(nfa.get_epsilon_closure(&states).len(), 3);
     }
 
     #[test]
