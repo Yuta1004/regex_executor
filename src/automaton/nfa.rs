@@ -155,14 +155,7 @@ mod tests {
 
     #[test]
     #[allow(unused_must_use)]
-    fn test_get_chain() {
-        /*
-          -------------(ε)-----------
-         /                           \
-        1 -----(a)----- 2 ----(b)----- 4
-         \                           /
-          -----(a)----- 3 ----(a)----
-        */
+    fn test_get_closure() {
         let mut nfa = NFA::new(1, 4);
         nfa.set_chain(1, 2, 'a');
         nfa.set_chain(1, 3, 'a');
