@@ -58,7 +58,7 @@ impl NFA {
     /// Result<(), ()>
     pub fn set_finish(&mut self, state: i32) -> Result<(), NFAError> {
         if Self::check_state(self, &state) {
-            self.start = state;
+            self.finish = state;
             return Ok(());
         }
         Err(NFAError::NonReservedState)
@@ -151,6 +151,8 @@ mod tests {
         assert_eq!(nfa.set_start(-1), Err(NFAError::NonReservedState));
         assert_eq!(nfa.set_finish(5), Err(NFAError::NonReservedState));
         assert_eq!(nfa.reserved_state, (0, 4));
+        assert_eq!(nfa.start, 0);
+        assert_eq!(nfa.finish, 4);
     }
 
     #[test]
