@@ -2,7 +2,7 @@ use std::collections::{ HashSet, HashMap };
 
 /// # NFAのエラー
 #[derive(Debug, PartialEq)]
-enum NFAError {
+pub enum NFAError {
     NonReservedState,
 }
 
@@ -11,7 +11,7 @@ enum NFAError {
 /// - start: i32 => 開始状態
 /// - finish: i32 =>  受理状態
 /// - reserved_state: tuple(i32, i32) => 使用済み状態番号の範囲
-struct NFA {
+pub struct NFA {
     pub start: i32,
     pub finish: i32,
     pub reserved_state: (i32, i32),
