@@ -111,6 +111,9 @@ impl NFA {
 
     /// # オートマトンのシミュレートを行う
     ///
+    /// ## args
+    /// - target: String => 対象文字列
+    ///
     /// ## returns
     /// - bool
     pub fn simulate(&self, target: String) -> bool {
