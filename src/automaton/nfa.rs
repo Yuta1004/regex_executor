@@ -109,6 +109,36 @@ impl NFA {
         Ok(())
     }
 
+    /// # オートマトンのシミュレートを行う
+    ///
+    /// ## returns
+    /// - bool
+    pub fn simulate(&self, target: String) -> bool {
+        // 状態管理用変数 宣言, 初期化
+        let mut old_states: HashSet<i32> = HashSet::new();
+        let mut new_states: HashSet<i32> = HashSet::new();
+        old_states.insert(self.start);
+        old_states.extend(self.epsilon_chain[&self.start].0.iter());
+
+        // シミュレート
+        let mut idx = 0;
+        let target = target.chars().collect::<Vec<char>>();
+        loop {
+            if idx == target.len() {
+                break;
+            }
+            let c = target[idx]; idx += 1;
+            for state in &old_states {
+                new_states.extend(&Self::get_closure(self, state, &c));
+            }
+            new_states.extend(&Self::get_epsilon_closure(self, &old_states));
+            old_states.clear();
+            old_states.extend(new_states.iter());
+            new_states.clear();
+        }
+        old_states.contains(&self.finish)
+    }
+
     /// # 状態Sからある文字Cを通じて到達できる状態を返す
     fn get_closure(&self, state: &i32, c: &char) -> HashSet<i32> {
         if Self::check_state(self, &state) {
@@ -208,5 +238,33 @@ mod tests {
             assert_eq!(nfa.epsilon_chain[&state].0.len(), checklist[(state-1) as usize].0);
             assert_eq!(nfa.epsilon_chain[&state].1.len(), checklist[(state-1) as usize].1);
         }
+    }
+
+    #[test]
+    #[allow(unused_must_use)]
+    fn test_simulate() {
+        let mut nfa = NFA::new(0, 10);      // (a|b)* abbを受理するNFA
+        nfa.set_chain(0, 7, '@');
+        nfa.set_chain(0, 1, '@');
+        nfa.set_chain(1, 2, '@');
+        nfa.set_chain(1, 4, '@');
+        nfa.set_chain(2, 3, 'a');
+        nfa.set_chain(3, 6, '@');
+        nfa.set_chain(4, 5, 'b');
+        nfa.set_chain(5, 6, '@');
+        nfa.set_chain(6, 1, '@');
+        nfa.set_chain(6, 7, '@');
+        nfa.set_chain(7, 8, 'a');
+        nfa.set_chain(8, 9, 'b');
+        nfa.set_chain(9, 10, 'b');
+        nfa.set_start(0);
+        nfa.set_finish(10);
+        assert_eq!(nfa.simulate("a".to_string()), false);
+        assert_eq!(nfa.simulate("b".to_string()), false);
+        assert_eq!(nfa.simulate("aba".to_string()), false);
+        assert_eq!(nfa.simulate("abbbabb".to_string()), true);
+        assert_eq!(nfa.simulate("bbbbbbaaabb".to_string()), true);
+        assert_eq!(nfa.simulate("aaaaaaaaaaaaaaaaaaab".to_string()), false);
+        assert_eq!(nfa.simulate("abababababaaabbabababba".to_string()), false);
     }
 }
