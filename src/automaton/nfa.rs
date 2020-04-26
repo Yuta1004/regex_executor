@@ -19,6 +19,7 @@ pub struct NFA {
     epsilon_chain: HashMap<i32, (HashSet<i32>, HashSet<i32>)>  // (forward, back)
 }
 
+/* 自身を引数に取らない関数群 */
 impl NFA {
     /// # NFAのコンストラクタ
     ///
@@ -33,7 +34,10 @@ impl NFA {
         }
         NFA { start: -1, finish: -1, reserved_state: (state_f, state_t), move_table, epsilon_chain }
     }
+}
 
+/* 自身を引数にとるメソッド群 */
+impl NFA {
     /// # 初期状態セット
     ///
     /// ## args
