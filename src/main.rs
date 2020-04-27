@@ -8,8 +8,6 @@ fn main() -> Result<(), NFAError> {
         (1, 2, 'a'), (2, 2, 'a'), (2, 2, 'b'), (2, 3, 'b'), (2, 0, '@')
     ];
     let mut nfa = NFA::new(0, 3);
-    nfa.set_start(0)?;
-    nfa.set_finish(3)?;
     for chain in &chains {
         nfa.set_chain(chain.0, chain.1, chain.2)?;
     }

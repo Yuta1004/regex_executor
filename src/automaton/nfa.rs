@@ -34,7 +34,7 @@ impl NFA {
             move_table.insert(state, HashMap::new());
             epsilon_chain.insert(state, (HashSet::new(), HashSet::new())); // (f, b)
         }
-        NFA { start: -1, finish: -1, reserved_state: (state_f, state_t), move_table, epsilon_chain }
+        NFA { start: state_f, finish: state_t, reserved_state: (state_f, state_t), move_table, epsilon_chain }
     }
 
     /// # 2つのNFAを結合する
@@ -51,36 +51,6 @@ impl NFA {
 
 /* 自身を引数にとるメソッド群 */
 impl NFA {
-    /// # 初期状態セット
-    ///
-    /// ## args
-    /// - state: i32 => 初期状態にセットする状態
-    ///
-    /// ## returns
-    /// Result<(), ()>
-    pub fn set_start(&mut self, state: i32) -> Result<(), NFAError> {
-        if Self::check_state(self, &state) {
-            self.start = state;
-            return Ok(());
-        }
-        Err(NFAError::NonReservedState)
-    }
-
-    /// # 受理状態セット
-    ///
-    /// ## args
-    /// - state: i32 => 受理状態にセットする状態
-    ///
-    /// ## returns
-    /// Result<(), ()>
-    pub fn set_finish(&mut self, state: i32) -> Result<(), NFAError> {
-        if Self::check_state(self, &state) {
-            self.finish = state;
-            return Ok(());
-        }
-        Err(NFAError::NonReservedState)
-    }
-
     /// # 状態S1と状態S2を文字Cで繋ぐ
     ///
     /// # note
@@ -191,15 +161,11 @@ impl NFA {
 mod tests {
     use std::collections::HashSet;
     use rand::seq::SliceRandom;
-    use super::{ NFA, NFAError };
+    use super::NFA;
 
     #[test]
     fn test_init() {
-        let mut nfa = NFA::new(0, 4);
-        assert_eq!(nfa.set_start(0), Ok(()));
-        assert_eq!(nfa.set_finish(4), Ok(()));
-        assert_eq!(nfa.set_start(-1), Err(NFAError::NonReservedState));
-        assert_eq!(nfa.set_finish(5), Err(NFAError::NonReservedState));
+        let nfa = NFA::new(0, 4);
         assert_eq!(nfa.reserved_state, (0, 4));
         assert_eq!(nfa.start, 0);
         assert_eq!(nfa.finish, 4);
@@ -230,8 +196,6 @@ mod tests {
         nfa.set_chain(2, 4, 'b');
         nfa.set_chain(3, 4, 'a');
         nfa.set_chain(1, 4, '@');
-        nfa.set_start(1);
-        nfa.set_finish(4);
         assert_eq!(nfa.get_closure(&1, &'b').iter().cloned().collect::<Vec<i32>>(), vec![]);
         assert_eq!(nfa.get_closure(&2, &'b').iter().cloned().collect::<Vec<i32>>(), vec![4]);
         assert_eq!(nfa.get_closure(&3, &'a').iter().cloned().collect::<Vec<i32>>(), vec![4]);
@@ -293,8 +257,6 @@ mod tests {
         nfa.set_chain(7, 8, 'a');
         nfa.set_chain(8, 9, 'b');
         nfa.set_chain(9, 10, 'b');
-        nfa.set_start(0);
-        nfa.set_finish(10);
         assert_eq!(nfa.simulate("a".to_string()), false);
         assert_eq!(nfa.simulate("b".to_string()), false);
         assert_eq!(nfa.simulate("aba".to_string()), false);
