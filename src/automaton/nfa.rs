@@ -1,5 +1,10 @@
 use std::collections::{ HashSet, HashMap };
 
+/// # 定数
+///
+/// - NODE_LIMIT: i32 => 管理できるノードの上限
+const NODE_LIMIT: i32 = 1000;
+
 /// # NFAのエラー
 #[derive(Debug, PartialEq)]
 pub enum NFAError {
@@ -7,14 +12,15 @@ pub enum NFAError {
 }
 
 /// # NFA
+///
 /// ## members
 /// - start: i32 => 開始状態
 /// - finish: i32 =>  受理状態
-/// - reserved_state: tuple(i32, i32) => 使用済み状態番号の範囲
+const MAX_NODE_SIZE: usize = 2000;
 pub struct NFA {
     pub start: i32,
     pub finish: i32,
-    pub reserved_state: (i32, i32),
+    reserved_state: Vec<i32>,
     move_table: HashMap<i32, HashMap<char, HashSet<i32>>>,
     epsilon_chain: HashMap<i32, (HashSet<i32>, HashSet<i32>)>  // (forward, back)
 }
@@ -32,7 +38,7 @@ impl NFA {
             move_table.insert(state, HashMap::new());
             epsilon_chain.insert(state, (HashSet::new(), HashSet::new())); // (f, b)
         }
-        NFA { start: state_f, finish: state_t, reserved_state: (state_f, state_t), move_table, epsilon_chain }
+        NFA { start: state_f, finish: state_t, reserved_state: vec![0; MAX_NODE_SIZE], move_table, epsilon_chain }
     }
 }
 
@@ -139,8 +145,10 @@ impl NFA {
 
     /// # 自分が管理する状態かどうかチェック
     fn check_state(&self, state: &i32) -> bool {
-        let (t, f) = self.reserved_state;
-        t <= *state && *state <= f
+        if 0 <= *state && *state < MAX_NODE_SIZE as i32 {
+            return self.reserved_state[*state as usize] == 1;
+        }
+        false
     }
 }
 
@@ -153,7 +161,6 @@ mod tests {
     #[test]
     fn test_init() {
         let nfa = NFA::new(0, 4);
-        assert_eq!(nfa.reserved_state, (0, 4));
         assert_eq!(nfa.start, 0);
         assert_eq!(nfa.finish, 4);
     }
