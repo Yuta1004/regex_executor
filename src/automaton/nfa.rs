@@ -1,11 +1,9 @@
-use std::cmp;
 use std::collections::{ HashSet, HashMap };
 
 /// # NFAのエラー
 #[derive(Debug, PartialEq)]
 pub enum NFAError {
     NonReservedState,
-    StatesDuplication,
 }
 
 /// # NFA
@@ -35,17 +33,6 @@ impl NFA {
             epsilon_chain.insert(state, (HashSet::new(), HashSet::new())); // (f, b)
         }
         NFA { start: state_f, finish: state_t, reserved_state: (state_f, state_t), move_table, epsilon_chain }
-    }
-
-    /// # 2つのNFAを結合する
-    pub fn merge(nfa_a: NFA, nfa_b: NFA) -> Result<NFA, NFAError> {
-        // 予約済ノードチェック
-        let (a_f, a_t) = nfa_a.reserved_state;
-        let (b_f, b_t) = nfa_b.reserved_state;
-        if (a_t-a_f)+(b_t-b_f)+2 > cmp::max(a_t, b_t)-cmp::min(a_f, b_f)+1 {
-            return Err(NFAError::StatesDuplication);
-        }
-        Ok(Self::new(0, 0))
     }
 }
 
@@ -169,22 +156,6 @@ mod tests {
         assert_eq!(nfa.reserved_state, (0, 4));
         assert_eq!(nfa.start, 0);
         assert_eq!(nfa.finish, 4);
-    }
-
-    #[test]
-    fn test_merge_check_dup() {
-        // ノード重複
-        let dup_testcases = vec![
-            ((0, 4), (5, 8)), ((0, 10), (9, 10)), ((1, 100), (100, 101)), ((0, 10), (100, 10))
-        ];
-        let dup_answers = vec![true, false, false, true];
-        for (testcase, answer) in dup_testcases.iter().zip(dup_answers.iter()) {
-            let range_a = testcase.0;
-            let range_b = testcase.1;
-            let nfa_a = NFA::new(range_a.0, range_a.1);
-            let nfa_b = NFA::new(range_b.0, range_b.1);
-            assert_eq!(NFA::merge(nfa_a, nfa_b).is_ok(), *answer);
-        }
     }
 
     #[test]
