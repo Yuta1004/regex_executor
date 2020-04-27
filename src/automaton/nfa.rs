@@ -3,7 +3,7 @@ use std::collections::{ HashSet, HashMap };
 /// # 定数
 ///
 /// - NODE_LIMIT: i32 => 管理できるノードの上限
-const NODE_LIMIT: i32 = 1000;
+const NODE_LIMIT: usize = 1000;
 
 /// # NFAのエラー
 #[derive(Debug, PartialEq)]
@@ -17,7 +17,6 @@ pub enum NFAError {
 /// ## members
 /// - start: i32 => 開始状態
 /// - finish: i32 =>  受理状態
-const MAX_NODE_SIZE: usize = 2000;
 pub struct NFA {
     pub start: i32,
     pub finish: i32,
@@ -33,13 +32,40 @@ impl NFA {
     /// ## args
     /// - init_states: Vec<i32> => 状態
     pub fn new(state_f: i32, state_t: i32) -> NFA {
-        let mut move_table: HashMap<i32, HashMap<char, HashSet<i32>>> = HashMap::new();
-        let mut epsilon_chain: HashMap<i32, (HashSet<i32>, HashSet<i32>)> = HashMap::new();
+        let nfa = NFA {
+            start: state_f,
+            finish: state_t,
+            move_table: HashMap::new(),
+            epsilon_chain: HashMap::new(),
+            reserved_state: vec![0; NODE_LIMIT]
+        };
+        NFA::reserve(nfa, state_f, state_t).ok().unwrap()
+    }
+
+    /// # NFAが管理する状態を追加する
+    ///
+    /// ## note
+    /// state_f/tは共に閉区間として扱われる
+    /// [state_f state_t]
+    ///
+    /// ## args
+    /// - nfa: NFA => 更新対象のNFA
+    /// - state_f: i32 => 状態 (from)
+    /// _ state_t: i32 => 状態 (to)
+    ///
+    /// ## return
+    /// Result<NFA, NFAError>
+    pub fn reserve(nfa: NFA, state_f: i32, state_t: i32) -> Result<NFA, NFAError> {
+        let mut nfa = nfa;
         for state in state_f..=state_t {
-            move_table.insert(state, HashMap::new());
-            epsilon_chain.insert(state, (HashSet::new(), HashSet::new())); // (f, b)
+            if nfa.reserved_state[state as usize] == 1 {
+                return Err(NFAError::AlreadyReservedState);
+            }
+            nfa.reserved_state[state as usize] = 1;
+            nfa.move_table.insert(state, HashMap::new());
+            nfa.epsilon_chain.insert(state, (HashSet::new(), HashSet::new())); // (forward, back)
         }
-        NFA { start: state_f, finish: state_t, reserved_state: vec![0; MAX_NODE_SIZE], move_table, epsilon_chain }
+        Ok(nfa)
     }
 }
 
@@ -146,7 +172,7 @@ impl NFA {
 
     /// # 自分が管理する状態かどうかチェック
     fn check_state(&self, state: &i32) -> bool {
-        if 0 <= *state && *state < MAX_NODE_SIZE as i32 {
+        if 0 <= *state && *state < NODE_LIMIT as i32 {
             return self.reserved_state[*state as usize] == 1;
         }
         false
