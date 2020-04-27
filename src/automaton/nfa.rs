@@ -20,7 +20,7 @@ pub enum NFAError {
 pub struct NFA {
     pub start: i32,
     pub finish: i32,
-    reserved_state: Vec<i32>,
+    reserved_state: Vec<bool>,
     move_table: HashMap<i32, HashMap<char, HashSet<i32>>>,
     epsilon_chain: HashMap<i32, (HashSet<i32>, HashSet<i32>)>  // (forward, back)
 }
@@ -37,7 +37,7 @@ impl NFA {
             finish: state_t,
             move_table: HashMap::new(),
             epsilon_chain: HashMap::new(),
-            reserved_state: vec![0; NODE_LIMIT]
+            reserved_state: vec![false; NODE_LIMIT]
         };
         NFA::reserve(nfa, state_f, state_t).ok().unwrap()
     }
@@ -58,10 +58,10 @@ impl NFA {
     pub fn reserve(nfa: NFA, state_f: i32, state_t: i32) -> Result<NFA, NFAError> {
         let mut nfa = nfa;
         for state in state_f..=state_t {
-            if nfa.reserved_state[state as usize] == 1 {
+            if nfa.reserved_state[state as usize] {
                 return Err(NFAError::AlreadyReservedState);
             }
-            nfa.reserved_state[state as usize] = 1;
+            nfa.reserved_state[state as usize] = true;
             nfa.move_table.insert(state, HashMap::new());
             nfa.epsilon_chain.insert(state, (HashSet::new(), HashSet::new())); // (forward, back)
         }
@@ -173,7 +173,7 @@ impl NFA {
     /// # 自分が管理する状態かどうかチェック
     fn check_state(&self, state: &i32) -> bool {
         if 0 <= *state && *state < NODE_LIMIT as i32 {
-            return self.reserved_state[*state as usize] == 1;
+            return self.reserved_state[*state as usize];
         }
         false
     }
