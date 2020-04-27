@@ -9,6 +9,7 @@ const NODE_LIMIT: i32 = 1000;
 #[derive(Debug, PartialEq)]
 pub enum NFAError {
     NonReservedState,
+    AlreadyReservedState,
 }
 
 /// # NFA
