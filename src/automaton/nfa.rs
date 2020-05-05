@@ -125,21 +125,7 @@ impl NFA {
                        .insert(state_b);
         // ε-chain更新
         if c == '@' {
-            self.epsilon_chain.get_mut(&state_a).unwrap().0.insert(state_b);
-            self.epsilon_chain.get_mut(&state_b).unwrap().1.insert(state_a);
-            let mut b_state_stack = vec![state_a];
-            let mut f_states: HashSet<i32> = HashSet::new();
-            f_states.extend(self.epsilon_chain[&state_a].0.iter());
-            f_states.extend(self.epsilon_chain[&state_b].0.iter());
-            loop {
-                if b_state_stack.len() == 0 {
-                    break;
-                }
-                let state = b_state_stack.pop().unwrap();
-                let mut b_states: Vec<i32> = self.epsilon_chain[&state].1.iter().cloned().collect();
-                self.epsilon_chain.get_mut(&state).unwrap().0.extend(&f_states);
-                b_state_stack.append(&mut b_states);
-            }
+            Self::update_epsilon_chain(self, &state_a, &state_b);
         }
         Ok(())
     }
@@ -196,6 +182,25 @@ impl NFA {
             }
         }
         reachable_states
+    }
+
+    /// # ε-chain更新処理
+    fn update_epsilon_chain(&mut self, state_a: &i32, state_b: &i32) {
+        self.epsilon_chain.get_mut(&state_a).unwrap().0.insert(*state_b);
+        self.epsilon_chain.get_mut(&state_b).unwrap().1.insert(*state_a);
+        let mut b_state_stack: Vec<i32> = vec![*state_a];
+        let mut f_states: HashSet<i32> = HashSet::new();
+        f_states.extend(self.epsilon_chain[&state_a].0.iter());
+        f_states.extend(self.epsilon_chain[&state_b].0.iter());
+        loop {
+            if b_state_stack.len() == 0 {
+                break;
+            }
+            let state = b_state_stack.pop().unwrap();
+            let mut b_states: Vec<i32> = self.epsilon_chain[&state].1.iter().cloned().collect();
+            self.epsilon_chain.get_mut(&state).unwrap().0.extend(&f_states);
+            b_state_stack.append(&mut b_states);
+        }
     }
 
     /// # 自分が管理する状態かどうかチェック
