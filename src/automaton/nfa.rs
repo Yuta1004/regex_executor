@@ -227,7 +227,7 @@ mod tests {
 
     #[test]
     #[allow(unused_must_use)]
-    fn test_merge() {
+    fn test_merge_expand_nfa() {
         let testcases = vec![
             ((0, 10), (11, 20)),        // #1
             ((0, 4), (2, 10)),          // #2
@@ -236,7 +236,7 @@ mod tests {
         for (testcase, result) in testcases.iter().zip(expect_results.iter()) {
             let nfa_a = NFA::new((testcase.0).0, (testcase.0).1);
             let nfa_b = NFA::new((testcase.1).0, (testcase.1).1);
-            assert_eq!(*result, NFA::merge(nfa_a, nfa_b, 0, 0).is_ok());
+            assert_eq!(*result, NFA::merge(nfa_a, nfa_b, 0, 1).is_ok());
         }
     }
 
