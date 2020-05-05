@@ -93,6 +93,17 @@ impl NFA {
         if reserve_s_f > 0 {
             nfa_a = Self::reserve(nfa_a, reserve_s_f, (NODE_LIMIT-1) as i32)?;
         }
+
+        // nfa_bに登録済のパスをnfa_aに登録していく
+        for (state_f, chars) in nfa_b.move_table.iter() {
+            for (c, state_t_list) in chars.iter() {
+                for state_t in state_t_list {
+                    nfa_a.set_chain(*state_f, *state_t, *c)?;
+                }
+            }
+        }
+        nfa_a.set_chain(merge_state_a, merge_state_b, '@')?;
+        nfa_a.finish = nfa_b.finish;
         Ok(nfa_a)
     }
 }
@@ -238,6 +249,31 @@ mod tests {
             let nfa_b = NFA::new((testcase.1).0, (testcase.1).1);
             assert_eq!(*result, NFA::merge(nfa_a, nfa_b, 0, 1).is_ok());
         }
+    }
+
+    #[test]
+    #[allow(unused_must_use)]
+    fn test_merge_chain_process() {
+        let mut nfa_a = NFA::new(1, 6);     // (a|b)*
+        nfa_a.set_chain(1, 2, '@');
+        nfa_a.set_chain(1, 4, '@');
+        nfa_a.set_chain(2, 3, 'a');
+        nfa_a.set_chain(4, 5, 'b');
+        nfa_a.set_chain(3, 6, '@');
+        nfa_a.set_chain(5, 6, '@');
+        nfa_a.set_chain(6, 1, '@');
+
+        let mut nfa_b = NFA::new(7, 10);     // aa|bb
+        nfa_b.set_chain(7, 8, 'a');
+        nfa_b.set_chain(8, 10, 'a');
+        nfa_b.set_chain(7, 9, 'b');
+        nfa_b.set_chain(9, 10, 'b');
+
+        let merged_nfa = NFA::merge(nfa_a, nfa_b, 6, 7).ok().unwrap();
+        assert_eq!(merged_nfa.simulate("aaaaaa".to_string()), true);
+        assert_eq!(merged_nfa.simulate("aaaabb".to_string()), true);
+        assert_eq!(merged_nfa.simulate("abababaab".to_string()), false);
+        assert_eq!(merged_nfa.simulate("abababaabba".to_string()), false);
     }
 
     #[test]
