@@ -17,6 +17,7 @@ pub enum NFAError {
 /// ## members
 /// - start: i32 => 開始状態
 /// - finish: i32 =>  受理状態
+#[derive(Debug)]
 pub struct NFA {
     pub start: i32,
     pub finish: i32,
@@ -66,6 +67,33 @@ impl NFA {
             nfa.epsilon_chain.insert(state, (HashSet::new(), HashSet::new())); // (forward, back)
         }
         Ok(nfa)
+    }
+
+    /// # NFA同士のマージ
+    ///
+    /// ## args
+    /// - nfa_a: NFA => 結合対象NFA A
+    /// - nfa_b: NFA => 結合対象NFA B
+    /// - merge_state_a: i32 => 結合する状態 A
+    /// - merge_state_b: i32 => 結合する状態B
+    pub fn merge(nfa_a: NFA, nfa_b: NFA, merge_state_a: i32, merge_state_b: i32) -> Result<NFA, NFAError> {
+        // nfa_a拡張
+        let mut nfa_a = nfa_a;
+        let mut reserve_s_f = -1;
+        for state in 0..(NODE_LIMIT as i32) {
+            match nfa_b.check_state(&state) {
+                true  if reserve_s_f < 0 => reserve_s_f = state,
+                false if reserve_s_f > 0 => {
+                    nfa_a = Self::reserve(nfa_a, reserve_s_f, state-1)?;
+                    reserve_s_f = -1;
+                }
+                _ => {}
+            }
+        }
+        if reserve_s_f > 0 {
+            nfa_a = Self::reserve(nfa_a, reserve_s_f, (NODE_LIMIT-1) as i32)?;
+        }
+        Ok(nfa_a)
     }
 }
 
@@ -190,6 +218,21 @@ mod tests {
         let nfa = NFA::new(0, 4);
         assert_eq!(nfa.start, 0);
         assert_eq!(nfa.finish, 4);
+    }
+
+    #[test]
+    #[allow(unused_must_use)]
+    fn test_merge() {
+        let testcases = vec![
+            ((0, 10), (11, 20)),        // #1
+            ((0, 4), (2, 10)),          // #2
+        ];
+        let expect_results = vec![true, false];
+        for (testcase, result) in testcases.iter().zip(expect_results.iter()) {
+            let nfa_a = NFA::new((testcase.0).0, (testcase.0).1);
+            let nfa_b = NFA::new((testcase.1).0, (testcase.1).1);
+            assert_eq!(*result, NFA::merge(nfa_a, nfa_b, 0, 0).is_ok());
+        }
     }
 
     #[test]
